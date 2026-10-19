@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Our Dream House — interactive presentation for an English lesson.">
+<title>Our Dream House</title>
+<script>
+(function () {
+  var t;
+  try { t = localStorage.getItem('dh-theme'); } catch (e) {}
+  if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<style>
+/* ================= TOKENS ================= */
+:root{
+  --bg:#f6f1e8;
+  --bg-2:#ece3d3;
+  --card:#fffdf9;
+  --ink:#2a2521;
+  --muted:#7b7062;
+  --line:#e4d8c6;
+  --wall:#c9b8a0;
+  --accent:#c9743a;
+  --accent-soft:#f7e3d0;
+  --green:#2f7d52;
+  --red:#c0453b;
+  --win:#4a8fc7;
+  --rl:88%;
+  --glow:rgba(201,116,58,.13);
+  --glow-2:rgba(63,107,79,.10);
+  --shadow:0 1px 2px rgba(42,37,33,.05), 0 16px 36px -18px rgba(42,37,33,.28);
+  --radius:20px;
+}
+html[data-theme="dark"]{
+  --bg:#15120e;
+  --bg-2:#1d1913;
+  --card:#241f19;
+  --ink:#f3ece2;
+  --muted:#a99b8a;
+  --line:#3a322a;
+  --wall:#66574a;
+  --accent:#e08c52;
+  --accent-soft:#3a2a1d;
+  --green:#4fbf85;
+  --red:#e2695e;
+  --win:#6fb0e8;
+  --rl:26%;
+  --glow:rgba(224,140,82,.12);
+  --glow-2:rgba(131,185,151,.09);
+  --shadow:0 1px 2px rgba(0,0,0,.35), 0 16px 36px -18px rgba(0,0,0,.75);
+  color-scheme:dark;
+}
+
+/* ================= BASE ================= */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100dvh;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:16px;line-height:1.55;
+  color:var(--ink);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 50% -18%, var(--glow), transparent 72%),
+    radial-gradient(700px 460px at 108% 108%, var(--glow-2), transparent 72%);
+}
+h1,h2,h3,.display{
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  font-weight:600;
+}
+button{font-family:inherit}
+
+/* ================= LAYOUT ================= */
+.app{
+  max-width:940px;margin:0 auto;
+  padding:0 18px calc(22px + env(safe-area-inset-bottom,0px));
+}
+@media (max-width:520px){ .app{padding:0 13px calc(18px + env(safe-area-inset-bottom,0px))} }
+
+/* ================= PROGRESS ================= */
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:60;pointer-events:none}
+.progress i{
+  display:block;height:100%;width:20%;border-radius:0 3px 3px 0;
+  background:linear-gradient(90deg,var(--accent),var(--green));
+  transition:width .45s cubic-bezier(.22,1,.36,1);
+}
+
+/* ================= TOPBAR ================= */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px 2px 8px}
+.brand{display:flex;align-items:center;gap:9px;font-size:.88rem;font-weight:650;letter-spacing:.02em;color:var(--muted)}
+.brand .logo{font-size:1.15rem;line-height:1}
+.icon-btn{
+  width:42px;height:42px;flex:none;border-radius:50%;
+  border:1px solid var(--line);background:var(--card);color:var(--ink);
+  font-size:1.05rem;line-height:1;cursor:pointer;display:grid;place-items:center;
+  box-shadow:var(--shadow);
+  transition:transform .18s ease, border-color .18s ease;
+}
+.icon-btn:hover{transform:translateY(-2px);border-color:var(--accent)}
+.icon-btn:active{transform:scale(.92)}
+
+/* ================= SLIDES ================= */
+.slide{display:none}
+.slide.on{display:block;animation:fadeUp .45s cubic-bezier(.22,1,.36,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ================= HERO ================= */
+.hero{text-align:center;padding:4px 0 0}
+.kicker{
+  display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--accent);background:var(--accent-soft);
+  padding:6px 13px;border-radius:999px;margin-bottom:13px;
+}
+.hero-title{
+  font-size:clamp(2.05rem,7.5vw,3.5rem);line-height:1.02;
+  letter-spacing:-.025em;margin:0 0 12px;
+}
+.hero-title em{font-style:italic;color:var(--accent)}
+.hero-sub{margin:0 auto 20px;max-width:46ch;color:var(--muted);font-size:.96rem}
+
+/* ================= FRAME / ILLUSTRATION ================= */
+.frame{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:24px;padding:8px;box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.house{display:block;width:100%;height:auto;border-radius:17px}
+
+/* ================= FACT CHIPS ================= */
+.facts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.facts span{
+  background:var(--card);border:1px solid var(--line);
+  padding:8px 15px;border-radius:999px;font-size:.84rem;white-space:nowrap;
+  transition:transform .18s ease, border-color .18s ease;
+}
+.facts span:hover{transform:translateY(-3px);border-color:var(--accent)}
+
+/* ================= SLIDE HEAD ================= */
+.slide-head{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap;margin:2px 0 12px}
+.slide-head h2{margin:0;font-size:clamp(1.35rem,4.4vw,1.85rem);letter-spacing:-.015em}
+.badge{font-size:.68rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+/* ================= CARD ================= */
+.card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);padding:10px;box-shadow:var(--shadow);
+}
+.card svg{display:block;width:100%;height:auto;border-radius:12px}
+
+/* ================= FLOOR PLAN ================= */
+.plan-bg{fill:var(--bg-2)}
+.room{
+  fill:hsl(var(--hue) 45% var(--rl));
+  stroke:var(--wall);stroke-width:2.5;cursor:pointer;
+  transition:fill .2s ease, stroke .2s ease, filter .2s ease;
+}
+.room:hover{stroke:var(--muted);filter:brightness(1.06)}
+.room.sel{stroke:var(--accent);stroke-width:4.5;filter:brightness(1.08)}
+.lbl{
+  fill:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:11.5px;font-weight:700;text-anchor:middle;pointer-events:none;
+  paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round;
+}
+.em{font-size:17px;text-anchor:middle;pointer-events:none}
+.win{stroke:var(--win);stroke-width:7;stroke-linecap:round}
+.door{stroke:var(--accent);stroke-width:7;stroke-linecap:round}
+.outline{fill:none;stroke:var(--wall);stroke-width:5;stroke-linejoin:round;pointer-events:none}
+.stair{stroke:var(--ink);stroke-width:1.4;opacity:.28;pointer-events:none}
+.porch{fill:none;stroke:var(--muted);stroke-width:2;stroke-dasharray:6 5;pointer-events:none}
+.porch-em{font-size:15px;text-anchor:middle;pointer-events:none}
+.porch-lbl{fill:var(--muted);font-family:system-ui,sans-serif;font-size:10px;text-anchor:middle;pointer-events:none}
+
+/* ================= INFO PANEL ================= */
+.info{
+  margin-top:14px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);padding:18px 20px;min-height:132px;
+  display:flex;flex-direction:column;justify-content:center;box-shadow:var(--shadow);
+}
+.info.pop{animation:popIn .3s ease both}
+@keyframes popIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.info-empty{text-align:center;color:var(--muted);font-size:.92rem}
+.info-head{display:flex;align-items:center;gap:11px;margin-bottom:5px}
+.info-head .e{font-size:1.6rem;line-height:1}
+.info-head b{
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  font-size:1.22rem;font-weight:600;letter-spacing:-.01em;
+}
+.info p{margin:0;color:var(--muted);font-size:.93rem;line-height:1.5}
+.gram{margin-top:11px;padding-top:11px;border-top:1px dashed var(--line);font-size:.9rem}
+.tag{
+  display:inline-block;background:var(--accent-soft);color:var(--accent);
+  font-size:.7rem;font-weight:800;letter-spacing:.06em;
+  padding:3px 9px;border-radius:7px;margin-right:8px;white-space:nowrap;
+}
+
+/* ================= GRAMMAR CARD ================= */
+.gcard{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 20px;margin-bottom:14px;box-shadow:var(--shadow);
+}
+.gcard h3{margin:0 0 8px;font-size:1rem;font-weight:650;letter-spacing:-.01em}
+.grow{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;
+  font-size:.9rem;color:var(--muted);padding:4px 0;
+}
+.grow i{color:var(--ink);font-style:italic}
+
+/* ================= WORD BANK ================= */
+.words{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.word{
+  background:var(--card);border:1px solid var(--line);border-radius:15px;
+  padding:13px 16px;transition:transform .18s ease, border-color .18s ease;
+}
+.word:hover{transform:translateY(-3px);border-color:var(--accent)}
+.word b{display:block;font-size:.95rem;margin-bottom:2px;letter-spacing:-.01em}
+.word b em{font-style:normal;margin-right:6px}
+.word span{display:block;font-size:.84rem;color:var(--muted);line-height:1.45}
+
+/* ================= QUIZ ================= */
+.quiz{display:grid;gap:11px}
+.q{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:15px 17px;box-shadow:var(--shadow);
+}
+.q p{margin:0 0 10px;font-size:.95rem;font-weight:650;line-height:1.45}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{
+  border:1px solid var(--line);background:transparent;color:var(--ink);
+  padding:8px 15px;border-radius:999px;font-size:.86rem;font-weight:600;
+  cursor:pointer;transition:background .16s, border-color .16s, color .16s, transform .16s;
+}
+.opt:hover:not(:disabled){border-color:var(--accent);transform:translateY(-1px)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--green);border-color:var(--green);color:#fff}
+.opt.wrong{background:var(--red);border-color:var(--red);color:#fff}
+.quiz-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;flex-wrap:wrap}
+.score{
+  font-size:.9rem;font-weight:700;letter-spacing:.02em;
+  background:var(--card);border:1px solid var(--line);
+  padding:9px 16px;border-radius:999px;
+}
+
+/* ================= NAV ================= */
+.nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:22px 0 0}
+.nav-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  border:1px solid var(--line);background:var(--card);color:var(--ink);
+  padding:11px 20px;border-radius:999px;font-size:.9rem;font-weight:650;
+  cursor:pointer;box-shadow:var(--shadow);
+  transition:transform .18s ease, border-color .18s ease, opacity .2s;
+}
+.nav-btn:hover:not(:disabled){transform:translateY(-2px);border-color:var(--accent)}
+.nav-btn:active:not(:disabled){transform:scale(.96)}
+.nav-btn:disabled{opacity:.3;box-shadow:none;pointer-events:none}
+.nav-btn.prev{justify-self:start}
+.nav-btn.next{justify-self:end}
+@media (max-width:420px){ .nav-btn{padding:10px 14px;font-size:.82rem} }
+
+.dots{display:flex;gap:8px;align-items:center}
+.dots button{
+  width:9px;height:9px;padding:0;border:none;border-radius:999px;
+  background:var(--line);cursor:pointer;
+  transition:background .25s ease, width .3s cubic-bezier(.22,1,.36,1);
+}
+.dots button.on{background:var(--accent);width:26px}
+.dots button:hover{background:var(--muted)}
+
+/* ================= FOOTER ================= */
+.foot{margin:14px 0 0;text-align:center;color:var(--muted);font-size:.74rem;letter-spacing:.04em}
+
+/* ================= MOTION ================= */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="progress"><i id="bar"></i></div>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand"><span class="logo">🏡</span><span>Our Dream House</span></div>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle light / dark theme">🌙</button>
+  </header>
+
+  <main class="deck" id="deck">
+
+    <!-- ================= SLIDE 1 — COVER ================= -->
+    <section class="slide on" aria-label="Cover">
+      <div class="hero">
+        <span class="kicker">English · Speaking practice</span>
+        <h1 class="hero-title">Our <em>Dream</em> House</h1>
+        <p class="hero-sub">A little tour of the house we would love to live in — room by room, in English.</p>
+      </div>
+
+      <div class="frame">
+        <svg class="house" viewBox="0 0 640 440" role="img"
+             aria-label="A two-storey dream house with green shutters, a front porch, a garden and a white fence">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#d8ecf8"/>
+              <stop offset="100%" stop-color="#f4f8ee"/>
+            </linearGradient>
+            <linearGradient id="roofG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#dc8f58"/>
+              <stop offset="100%" stop-color="#b5662f"/>
+            </linearGradient>
+            <linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fdf4e5"/>
+              <stop offset="100%" stop-color="#f0e2cb"/>
+            </linearGradient>
+            <linearGradient id="grassG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#cfe8b4"/>
+              <stop offset="100%" stop-color="#b3d894"/>
+            </linearGradient>
+          </defs>
+
+          <!-- sky -->
+          <rect width="640" height="440" fill="url(#sky)"/>
+
+          <!-- sun -->
+          <circle cx="552" cy="76" r="46" fill="#ffe3a3" opacity=".45"/>
+          <circle cx="552" cy="76" r="30" fill="#ffd071"/>
+
+          <!-- clouds -->
+          <g fill="#ffffff" opacity=".85">
+            <ellipse cx="140" cy="82" rx="42" ry="20"/>
+            <ellipse cx="176" cy="72" rx="30" ry="17"/>
+            <ellipse cx="104" cy="74" rx="26" ry="15"/>
+            <ellipse cx="470" cy="124" rx="34" ry="16"/>
+            <ellipse cx="500" cy="116" rx="24" ry="13"/>
+          </g>
+
+          <!-- birds -->
+          <g stroke="#93aab8" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".85">
+            <path d="M300 88 q7 -7 14 0"/>
+            <path d="M324 98 q6 -6 12 0"/>
+          </g>
+
+          <!-- distant hills -->
+          <path d="M0 356 Q150 312 300 344 T640 340 L640 440 L0 440 Z" fill="#d9ebc8"/>
+
+          <!-- grass -->
+          <path d="M0 356 Q320 336 640 356 L640 440 L0 440 Z" fill="url(#grassG)"/>
+
+          <!-- fence -->
+          <g>
+            <g fill="#ffffff" stroke="#e2d6c3" stroke-width="1.5">
+              <rect x="34" y="318" width="232" height="7" rx="3"/>
+              <rect x="34" y="338" width="232" height="7" rx="3"/>
+              <rect x="392" y="318" width="222" height="7" rx="3"/>
+              <rect x="392" y="338" width="222" height="7" rx="3"/>
+            </g>
+            <g fill="#ffffff" stroke="#e2d6c3" stroke-width="1.5">
+              <rect x="38" y="302" width="10" height="48" rx="3"/>
+              <rect x="60" y="302" width="10" height="48" rx="3"/>
+              <rect x="82" y="302" width="10" height="48" rx="3"/>
+              <rect x="104" y="302" width="10" height="48" rx="3"/>
+              <rect x="126" y="302" width="10" height="48" rx="3"/>
+              <rect x="148" y="302" width="10" height="48" rx="3"/>
+              <rect x="170" y="302" width="10" height="48" rx="3"/>
+              <rect x="192" y="302" width="10" height="48" rx="3"/>
+              <rect x="214" y="302" width="10" height="48" rx="3"/>
+              <rect x="236" y="302" width="10" height="48" rx="3"/>
+              <rect x="394" y="302" width="10" height="48" rx="3"/>
+              <rect x="416" y="302" width="10" height="48" rx="3"/>
+              <rect x="438" y="302" width="10" height="48" rx="3"/>
+              <rect x="460" y="302" width="10" height="48" rx="3"/>
+              <rect x="482" y="302" width="10" height="48" rx="3"/>
+              <rect x="504" y="302" width="10" height="48" rx="3"/>
+              <rect x="526" y="302" width="10" height="48" rx="3"/>
+              <rect x="548" y="302" width="10" height="48" rx="3"/>
+              <rect x="570" y="302" width="10" height="48" rx="3"/>
+              <rect x="592" y="302" width="10" height="48" rx="3"/>
+            </g>
+          </g>
+
+          <!-- tree -->
+          <g>
+            <rect x="104" y="286" width="12" height="74" rx="4" fill="#9a6b46"/>
+            <circle cx="110" cy="258" r="42" fill="#8dc277"/>
+            <circle cx="76" cy="290" r="30" fill="#7cb669"/>
+            <circle cx="144" cy="290" r="30" fill="#7cb669"/>
+            <circle cx="110" cy="224" r="27" fill="#9ccf86"/>
+          </g>
+
+          <!-- path -->
+          <path d="M300 344 L340 344 L382 440 L258 440 Z" fill="#ece0ca"/>
+          <g stroke="#dbcbaf" stroke-width="2" opacity=".85">
+            <line x1="286" y1="392" x2="356" y2="392"/>
+            <line x1="278" y1="416" x2="364" y2="416"/>
+          </g>
+
+          <!-- house -->
+          <g>
+            <!-- chimney -->
+            <rect x="392" y="108" width="30" height="68" rx="3" fill="#b06b4a"/>
+            <rect x="386" y="100" width="42" height="12" rx="3" fill="#9c5c3e"/>
+            <rect x="398" y="128" width="18" height="6" rx="2" fill="#c88a6b" opacity=".7"/>
+            <rect x="396" y="150" width="18" height="6" rx="2" fill="#c88a6b" opacity=".7"/>
+            <!-- smoke -->
+            <g fill="#ffffff" opacity=".62">
+              <circle cx="407" cy="88" r="10"/>
+              <circle cx="420" cy="70" r="13"/>
+              <circle cx="436" cy="54" r="9"/>
+            </g>
+
+            <!-- body -->
+            <rect x="200" y="172" width="240" height="168" fill="url(#wallG)" stroke="#cdb695" stroke-width="3"/>
+            <line x1="200" y1="252" x2="440" y2="252" stroke="#cdb695" stroke-width="3"/>
+
+            <!-- roof -->
+            <path d="M182 178 L320 92 L458 178 Z" fill="url(#roofG)" stroke="#9c5a2c" stroke-width="3" stroke-linejoin="round"/>
+
+            <!-- upstairs windows -->
+            <g>
+              <rect x="208" y="194" width="12" height="44" rx="2" fill="#3f8059"/>
+              <rect x="222" y="194" width="46" height="44" rx="3" fill="#cfeaf9" stroke="#8dc2dd" stroke-width="2.5"/>
+              <line x1="245" y1="194" x2="245" y2="238" stroke="#8dc2dd" stroke-width="2.5"/>
+              <line x1="222" y1="216" x2="268" y2="216" stroke="#8dc2dd" stroke-width="2.5"/>
+              <rect x="270" y="194" width="12" height="44" rx="2" fill="#3f8059"/>
+            </g>
+            <g>
+              <rect x="358" y="194" width="12" height="44" rx="2" fill="#3f8059"/>
+              <rect x="372" y="194" width="46" height="44" rx="3" fill="#cfeaf9" stroke="#8dc2dd" stroke-width="2.5"/>
+              <line x1="395" y1="194" x2="395" y2="238" stroke="#8dc2dd" stroke-width="2.5"/>
+              <line x1="372" y1="216" x2="418" y2="216" stroke="#8dc2dd" stroke-width="2.5"/>
+              <rect x="420" y="194" width="12" height="44" rx="2" fill="#3f8059"/>
+            </g>
+
+            <!-- downstairs windows -->
+            <g>
+              <rect x="210" y="276" width="12" height="40" rx="2" fill="#3f8059"/>
+              <rect x="224" y="276" width="42" height="40" rx="3" fill="#cfeaf9" stroke="#8dc2dd" stroke-width="2.5"/>
+              <line x1="245" y1="276" x2="245" y2="316" stroke="#8dc2dd" stroke-width="2.5"/>
+              <rect x="268" y="276" width="12" height="40" rx="2" fill="#3f8059"/>
+            </g>
+            <g>
+              <rect x="360" y="276" width="12" height="40" rx="2" fill="#3f8059"/>
+              <rect x="374" y="276" width="42" height="40" rx="3" fill="#cfeaf9" stroke="#8dc2dd" stroke-width="2.5"/>
+              <line x1="395" y1="276" x2="395" y2="316" stroke="#8dc2dd" stroke-width="2.5"/>
+              <rect x="418" y="276" width="12" height="40" rx="2" fill="#3f8059"/>
+            </g>
+
+            <!-- porch posts -->
+            <rect x="284" y="268" width="7" height="72" fill="#f0e2cb" stroke="#cdb695" stroke-width="1.6"/>
+            <rect x="349" y="268" width="7" height="72" fill="#f0e2cb" stroke="#cdb695" stroke-width="1.6"/>
+
+            <!-- door -->
+            <path d="M298 340 V294 Q298 274 320 274 Q342 274 342 294 V340 Z"
+                  fill="#8a5a3b" stroke="#c9743a" stroke-width="3"/>
+            <rect x="308" y="290" width="24" height="18" rx="2" fill="#cfeaf9" stroke="#8dc2dd" stroke-width="2"/>
+            <circle cx="334" cy="312" r="3" fill="#f2d08a"/>
+
+            <!-- porch awning -->
+            <path d="M280 268 L360 268 L344 244 L296 244 Z"
+                  fill="#c9743a" stroke="#9c5a2c" stroke-width="2" stroke-linejoin="round"/>
+
+            <!-- porch steps -->
+            <rect x="276" y="338" width="88" height="9" rx="3" fill="#d8c6a8"/>
+            <rect x="288" y="347" width="64" height="8" rx="3" fill="#cfbb9b"/>
+          </g>
+
+          <!-- bushes -->
+          <circle cx="198" cy="354" r="18" fill="#7cb669"/>
+          <circle cx="224" cy="358" r="13" fill="#8dc277"/>
+          <circle cx="446" cy="354" r="18" fill="#7cb669"/>
+          <circle cx="420" cy="358" r="13" fill="#8dc277"/>
+
+          <!-- flowers -->
+          <g>
+            <circle cx="58" cy="384" r="4" fill="#f39ab5"/>
+            <circle cx="74" cy="396" r="3.5" fill="#ffd071"/>
+            <circle cx="44" cy="400" r="3.5" fill="#ffffff"/>
+            <circle cx="582" cy="388" r="4" fill="#f39ab5"/>
+            <circle cx="600" cy="400" r="3.5" fill="#ffd071"/>
+            <circle cx="562" cy="402" r="3.5" fill="#ffffff"/>
+            <circle cx="150" cy="404" r="3.5" fill="#ffd071"/>
+            <circle cx="500" cy="408" r="3.5" fill="#f39ab5"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="facts">
+        <span>🏠 2 floors</span>
+        <span>🛏️ 2 bedrooms</span>
+        <span>🪑 Front porch</span>
+        <span>🔥 Fireplace</span>
+        <span>🌳 Garden &amp; white fence</span>
+        <span>🟩 Green shutters</span>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 2 — GROUND FLOOR ================= -->
+    <section class="slide" aria-label="Ground floor plan">
+      <div class="slide-head">
+        <h2>Ground floor</h2>
+        <span class="badge">tap a room</span>
+      </div>
+      <div class="card"><svg id="plan0" viewBox="0 0 400 280" role="img" aria-label="Ground floor plan"></svg></div>
+      <div class="info" id="info0">
+        <div class="info-empty">Tap a room to see what’s inside 👆</div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 3 — FIRST FLOOR ================= -->
+    <section class="slide" aria-label="First floor plan">
+      <div class="slide-head">
+        <h2>First floor</h2>
+        <span class="badge">tap a room</span>
+      </div>
+      <div class="card"><svg id="plan1" viewBox="0 0 400 280" role="img" aria-label="First floor plan"></svg></div>
+      <div class="info" id="info1">
+        <div class="info-empty">Tap a room to see what’s inside 👆</div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 4 — WORDS ================= -->
+    <section class="slide" aria-label="Word bank">
+      <div class="slide-head">
+        <h2>Words you need</h2>
+        <span class="badge">vocabulary</span>
+      </div>
+
+      <div class="gcard">
+        <h3>Grammar spot</h3>
+        <div class="grow"><i>There is</i> a sofa in the living room. <span>· singular</span></div>
+        <div class="grow"><i>There are</i> two bedrooms upstairs. <span>· plural</span></div>
+        <div class="grow"><i>in · on · under · next to · between · opposite · behind · in front of</i></div>
+      </div>
+
+      <div class="words" id="words"></div>
+    </section>
+
+    <!-- ================= SLIDE 5 — QUIZ ================= -->
+    <section class="slide" aria-label="Quiz">
+      <div class="slide-head">
+        <h2>Quick quiz</h2>
+        <span class="badge">check yourself</span>
+      </div>
+
+      <div class="quiz" id="quiz"></div>
+
+      <div class="quiz-bar">
+        <span class="score" id="score">Score: 0 / 6</span>
+        <button class="nav-btn" id="resetQuiz" type="button">↺ Try again</button>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="nav" aria-label="Slide navigation">
+    <button class="nav-btn prev" id="prev" type="button">← Back</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn next" id="next" type="button">Next →</button>
+  </nav>
+
+  <p class="foot">Use ← → on the keyboard, or swipe on the screen.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     1. FLOOR PLAN DATA
+     ============================================================ */
+  var FLOORS = [
+    {
+      rooms: [
+        { name: "Toilet",      emoji: "🚽", hue: 196, x: 20,  y: 20,  w: 70,  h: 90  },
+        { name: "Stairs",      emoji: "🪜", hue: 35,  x: 90,  y: 20,  w: 70,  h: 90  },
+        { name: "Kitchen",     emoji: "🍳", hue: 48,  x: 160, y: 20,  w: 220, h: 90  },
+        { name: "Living room", emoji: "🛋️", hue: 28,  x: 20,  y: 110, w: 190, h: 120 },
+        { name: "Hall",        emoji: "🚪", hue: 20,  x: 210, y: 110, w: 80,  h: 120 },
+        { name: "Dining",      emoji: "🍽️", hue: 12,  x: 290, y: 110, w: 90,  h: 120 }
+      ],
+      windows: [[50, 230, 90, 230], [115, 230, 155, 230], [310, 230, 355, 230], [230, 20, 320, 20]],
+      door:  [225, 230, 275, 230],
+      porch: [190, 234, 120, 34],
+      stairs:[90, 20, 70, 90]
+    },
+    {
+      rooms: [
+        { name: "Bathroom",  emoji: "🛁", hue: 190, x: 20,  y: 20,  w: 110, h: 80  },
+        { name: "Stairs",    emoji: "🪜", hue: 35,  x: 130, y: 20,  w: 70,  h: 80  },
+        { name: "Landing",   emoji: "✨", hue: 22,  x: 200, y: 20,  w: 100, h: 80  },
+        { name: "Storage",   emoji: "📦", hue: 50,  x: 300, y: 20,  w: 80,  h: 80  },
+        { name: "Bedroom 1", emoji: "🛏️", hue: 265, x: 20,  y: 100, w: 175, h: 130 },
+        { name: "Bedroom 2", emoji: "🛏️", hue: 325, x: 205, y: 100, w: 175, h: 130 }
+      ],
+      windows: [[80, 230, 130, 230], [270, 230, 320, 230]],
+      door:  null,
+      porch: null,
+      stairs:[130, 20, 70, 80]
+    }
+  ];
+
+  /* ============================================================
+     2. ROOM DESCRIPTIONS
+     ============================================================ */
+  var INFO = {
+    "Toilet":      { emoji: "🚽", desc: "A small guest toilet next to the stairs.",                 gram: "The toilet is next to the stairs. There is a small window." },
+    "Stairs":      { emoji: "🪜", desc: "Wooden stairs that connect the two floors.",               gram: "The stairs are in the middle of the house." },
+    "Kitchen":     { emoji: "🍳", desc: "A fridge, a cooker and a big sink under the window.",      gram: "There is a big window in the kitchen." },
+    "Living room": { emoji: "🛋️", desc: "A sofa, a TV and a fireplace. The cosiest room.",          gram: "There is a fireplace. There are two armchairs." },
+    "Hall":        { emoji: "🚪", desc: "The front door, a coat rack and shoes.",                   gram: "The stairs are next to the hall." },
+    "Dining":      { emoji: "🍽️", desc: "A wooden table with six chairs.",                          gram: "There are six chairs around the table." },
+    "Bathroom":    { emoji: "🛁", desc: "A bath, a shower and a washing machine.",                  gram: "The washing machine is in the corner of the bathroom." },
+    "Landing":     { emoji: "✨", desc: "A small space at the top of the stairs.",                  gram: "The landing is at the top of the stairs. It leads to all the rooms." },
+    "Storage":     { emoji: "📦", desc: "Boxes, suitcases and winter blankets.",                    gram: "There are boxes on the shelves." },
+    "Bedroom 1":   { emoji: "🛏️", desc: "A bed, a desk and a wardrobe. A dormer window with green shutters.", gram: "There is a desk under the window." },
+    "Bedroom 2":   { emoji: "🛏️", desc: "A double bed and a chest of drawers. Quiet and sunny.",    gram: "There are two windows in this room." }
+  };
+
+  /* ============================================================
+     3. RENDER FLOOR PLANS
+     ============================================================ */
+  function renderPlan(svg, floor) {
+    var s = '<rect class="plan-bg" x="6" y="6" width="388" height="268" rx="14"/>';
+
+    // rooms (fills)
+    floor.rooms.forEach(function (r) {
+      s += '<rect class="room" style="--hue:' + r.hue + '" x="' + r.x + '" y="' + r.y +
+           '" width="' + r.w + '" height="' + r.h + '" rx="3" data-room="' + r.name + '"/>';
+    });
+
+    // stairs
+    if (floor.stairs) {
+      var st = floor.stairs, k, y;
+      for (k = 1; k < 9; k++) {
+        y = st[1] + k * st[3] / 9;
+        s += '<line class="stair" x1="' + (st[0] + 8) + '" y1="' + y +
+             '" x2="' + (st[0] + st[2] - 8) + '" y2="' + y + '"/>';
+      }
+    }
+
+    // porch
+    if (floor.porch) {
+      var p = floor.porch;
+      s += '<rect class="porch" x="' + p[0] + '" y="' + p[1] + '" width="' + p[2] + '" height="' + p[3] + '" rx="7"/>';
+      s += '<text class="porch-em" x="' + (p[0] + p[2] / 2) + '" y="' + (p[1] + 17) + '">🪑</text>';
+      s += '<text class="porch-lbl" x="' + (p[0] + p[2] / 2) + '" y="' + (p[1] + 29) + '">porch</text>';
+    }
+
+    // outer walls
+    s += '<path class="outline" d="M20 20 H380 V230 H20 Z"/>';
+
+    // windows + door
+    floor.windows.forEach(function (w) {
+      s += '<line class="win" x1="' + w[0] + '" y1="' + w[1] + '" x2="' + w[2] + '" y2="' + w[3] + '"/>';
+    });
+    if (floor.door) {
+      s += '<line class="door" x1="' + floor.door[0] + '" y1="' + floor.door[1] +
+           '" x2="' + floor.door[2] + '" y2="' + floor.door[3] + '"/>';
+    }
+
+    // labels on top
+    floor.rooms.forEach(function (r) {
+      var cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+      if (r.emoji) s += '<text class="em" x="' + cx + '" y="' + (cy - 4) + '">' + r.emoji + '</text>';
+      s += '<text class="lbl" x="' + cx + '" y="' + (cy + (r.emoji ? 14 : 4)) + '">' + r.name + '</text>';
+    });
+
+    svg.innerHTML = s;
+  }
+
+  function showInfo(idx, name) {
+    var box = document.getElementById("info" + idx);
+    var r = INFO[name];
+    if (!r) return;
+    box.innerHTML =
+      '<div class="info-head"><span class="e">' + r.emoji + '</span><b>' + name + '</b></div>' +
+      '<p>' + r.desc + '</p>' +
+      '<div class="gram"><span class="tag">GRAMMAR</span>' + r.gram + '</div>';
+    box.classList.remove("pop");
+    void box.offsetWidth;
+    box.classList.add("pop");
+  }
+
+  function showEmpty(idx) {
+    var box = document.getElementById("info" + idx);
+    box.innerHTML = '<div class="info-empty">Tap a room to see what’s inside 👆</div>';
+  }
+
+  function bindPlan(idx) {
+    var svg = document.getElementById("plan" + idx);
+    var floor = FLOORS[idx];
+
+    renderPlan(svg, floor);
+
+    svg.addEventListener("click", function (e) {
+      var roomEl = e.target.closest ? e.target.closest(".room") : null;
+      if (!roomEl) return;
+
+      var wasSelected = roomEl.classList.contains("sel");
+      svg.querySelectorAll(".room.sel").forEach(function (x) { x.classList.remove("sel"); });
+
+      if (wasSelected) {
+        showEmpty(idx);
+        return;
+      }
+      roomEl.classList.add("sel");
+      showInfo(idx, roomEl.getAttribute("data-room"));
+    });
+  }
+
+  bindPlan(0);
+  bindPlan(1);
+
+  /* ============================================================
+     4. WORD BANK
+     ============================================================ */
+  var WORDS = [
+    { emoji: "🪑", word: "porch",            def: "a small covered area in front of the door" },
+    { emoji: "🔥", word: "fireplace",        def: "a place where you make a fire in the living room" },
+    { emoji: "🟩", word: "shutters",         def: "wooden panels on both sides of a window" },
+    { emoji: "🏠", word: "dormer window",    def: "a window built into the roof" },
+    { emoji: "🧺", word: "chest of drawers", def: "furniture with drawers for clothes" },
+    { emoji: "👕", word: "wardrobe",         def: "a big cupboard for clothes" },
+    { emoji: "🪜", word: "landing",          def: "the space at the top of the stairs" },
+    { emoji: "🤍", word: "fence",            def: "a wooden wall around a garden" },
+    { emoji: "📦", word: "storage",          def: "a room for things you don’t use every day" },
+    { emoji: "🛋️", word: "cosy",             def: "warm and comfortable" }
+  ];
+
+  document.getElementById("words").innerHTML = WORDS.map(function (w) {
+    return '<div class="word"><b><em>' + w.emoji + '</em>' + w.word + '</b><span>' + w.def + '</span></div>';
+  }).join("");
+
+  /* ============================================================
+     5. QUIZ
+     ============================================================ */
+  var QUIZ = [
+    { q: "There ___ a fireplace in the living room.",     a: ["is", "are", "be"],                        c: 0 },
+    { q: "___ two bedrooms on the first floor.",          a: ["There is", "There are", "It is"],        c: 1 },
+    { q: "The washing machine is ___ the bathroom.",      a: ["in", "on", "at"],                         c: 0 },
+    { q: "We keep boxes and suitcases in the ___.",       a: ["landing", "porch", "storage"],            c: 2 },
+    { q: "The stairs are ___ the hall.",                  a: ["next to", "under", "on"],                 c: 0 },
+    { q: "There ___ four windows on the ground floor.",   a: ["is", "are", "be"],                        c: 1 }
+  ];
+
+  var quizBox = document.getElementById("quiz");
+  var scoreEl = document.getElementById("score");
+  var score = 0;
+
+  function renderQuiz() {
+    score = 0;
+    scoreEl.textContent = "Score: 0 / " + QUIZ.length;
+    quizBox.innerHTML = QUIZ.map(function (q, qi) {
+      return '<div class="q" data-q="' + qi + '">' +
+             '<p>' + (qi + 1) + '. ' + q.q + '</p>' +
+             '<div class="opts">' +
+             q.a.map(function (opt, oi) {
+               return '<button class="opt" type="button" data-oi="' + oi + '">' + opt + '</button>';
+             }).join("") +
+             '</div></div>';
+    }).join("");
+  }
+
+  quizBox.addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest(".opt") : null;
+    if (!btn || btn.disabled) return;
+
+    var qEl = btn.closest(".q");
+    if (qEl.getAttribute("data-done")) return;
+    qEl.setAttribute("data-done", "1");
+
+    var qi = parseInt(qEl.getAttribute("data-q"), 10);
+    var picked = parseInt(btn.getAttribute("data-oi"), 10);
+    var correct = QUIZ[qi].c;
+
+    qEl.querySelectorAll(".opt").forEach(function (b) {
+      b.disabled = true;
+      var i = parseInt(b.getAttribute("data-oi"), 10);
+      if (i === correct) b.classList.add("right");
+      else if (i === picked) b.classList.add("wrong");
+    });
+
+    if (picked === correct) score++;
+    scoreEl.textContent = "Score: " + score + " / " + QUIZ.length;
+  });
+
+  document.getElementById("resetQuiz").addEventListener("click", renderQuiz);
+  renderQuiz();
+
+  /* ============================================================
+     6. SLIDE NAVIGATION
+     ============================================================ */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var dotsBox = document.getElementById("dots");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+  var bar  = document.getElementById("bar");
+  var current = 0;
+
+  // build dots
+  slides.forEach(function (_, i) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.setAttribute("aria-label", "Go to slide " + (i + 1));
+    b.addEventListener("click", function () { go(i); });
+    dotsBox.appendChild(b);
+  });
+  var dots = Array.prototype.slice.call(dotsBox.children);
+
+  function go(n) {
+    current = Math.max(0, Math.min(slides.length - 1, n));
+
+    slides.forEach(function (s, i) { s.classList.toggle("on", i === current); });
+    dots.forEach(function (d, i) { d.classList.toggle("on", i === current); });
+
+    prev.disabled = current === 0;
+    next.disabled = current === slides.length - 1;
+    bar.style.width = ((current + 1) / slides.length * 100) + "%";
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  prev.addEventListener("click", function () { go(current - 1); });
+  next.addEventListener("click", function () { go(current + 1); });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(current + 1); }
+    if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   { e.preventDefault(); go(current - 1); }
+    if (e.key === "Home") go(0);
+    if (e.key === "End")  go(slides.length - 1);
+  });
+
+  // swipe
+  var touchX = null, touchY = null;
+  var deck = document.getElementById("deck");
+  deck.addEventListener("touchstart", function (e) {
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+  }, { passive: true });
+  deck.addEventListener("touchend", function (e) {
+    if (touchX === null) return;
+    var dx = e.changedTouches[0].clientX - touchX;
+    var dy = e.changedTouches[0].clientY - touchY;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      go(current + (dx < 0 ? 1 : -1));
+    }
+    touchX = touchY = null;
+  }, { passive: true });
+
+  /* ============================================================
+     7. THEME TOGGLE
+     ============================================================ */
+  var themeBtn = document.getElementById("themeBtn");
+
+  function paintThemeBtn() {
+    var dark = document.documentElement.getAttribute("data-theme") === "dark";
+    themeBtn.textContent = dark ? "☀️" : "🌙";
+    themeBtn.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+  }
+
+  themeBtn.addEventListener("click", function () {
+    var dark = document.documentElement.getAttribute("data-theme") === "dark";
+    var t = dark ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", t);
+    try { localStorage.setItem("dh-theme", t); } catch (e) {}
+    paintThemeBtn();
+  });
+
+  paintThemeBtn();
+
+  /* ============================================================
+     8. START
+     ============================================================ */
+  go(0);
+
+})();
+</script>
+</body>
+</html>
